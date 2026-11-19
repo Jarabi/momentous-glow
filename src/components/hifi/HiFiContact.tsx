@@ -64,7 +64,7 @@ export default function HiFiContact() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider" style={{ color: colors.roseGold }}>Live Chat</p>
-                <p className="text-sm" style={{ color: colors.charcoal }}>Mon–Fri, 9am–6pm EST</p>
+                <p className="text-sm" style={{ color: colors.charcoal }}>Mon–Fri, 9am–6pm</p>
               </div>
             </div>
             <div className="flex items-start gap-3">

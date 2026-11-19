@@ -93,7 +93,8 @@ export const products: Product[] = [
     keyIngredients: ['Rosehip Oil', 'Bakuchiol', 'Squalane'],
     availability: 'in_stock',
     sizes: ['30ml'],
-    image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=600&q=80',
+    // image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1679570939790-9d39b9c65405?auto=format&fit=crop&w=600&q=80',
   },
   {
     id: 'gentle-foaming-cleanser',

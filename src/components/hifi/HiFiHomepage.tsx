@@ -1,4 +1,5 @@
-import { Play, ArrowRight, Star, Instagram } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowRight, Star, Instagram, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, ValueProps, Newsletter, Footer } from './shared';
 import { useStore, products, type Product } from './store';
@@ -59,9 +60,43 @@ const ugcImages = [
   'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=300&q=80',
 ];
 
+const heroSlides = [
+  {
+    src: 'https://images.unsplash.com/photo-1679570939790-9d39b9c65405?auto=format&fit=crop&w=1000&q=80',
+    alt: 'Skincare products arranged on a counter',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1000&q=80',
+    alt: 'A vitamin C skincare serum',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&w=1000&q=80',
+    alt: 'A moisturizer and skincare products',
+  },
+];
+
 export default function HiFiHomepage() {
   const { navigate } = useStore();
   const bestsellers = products.filter(p => p.badge === 'Bestseller' || p.rating >= 4.7).slice(0, 4);
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+
+    const intervalId = window.setInterval(() => {
+      setActiveHeroSlide(current => (current + 1) % heroSlides.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isAutoPlaying]);
+
+  const showPreviousHeroSlide = () => {
+    setActiveHeroSlide(current => (current - 1 + heroSlides.length) % heroSlides.length);
+  };
+  const showNextHeroSlide = () => {
+    setActiveHeroSlide(current => (current + 1) % heroSlides.length);
+  };
 
   return (
     <div style={{ backgroundColor: colors.ivory, color: colors.softBlack }}>
@@ -72,7 +107,7 @@ export default function HiFiHomepage() {
       <section className="relative overflow-hidden" style={{ backgroundColor: colors.beige }}>
         <div className="px-6 py-16 md:px-16 md:py-24 md:flex md:items-center">
           <div className="md:max-w-lg text-center md:text-left z-10">
-            <p className="text-xs uppercase tracking-[0.3em] mb-4" style={{ color: colors.roseGold }}>New Collection · Spring 2026</p>
+            {/* <p className="text-xs uppercase tracking-[0.3em] mb-4" style={{ color: colors.roseGold }}>New Collection · Spring 2026</p> */}
             <h1 className="font-light leading-tight mb-6 text-3xl md:text-5xl" style={{ fontFamily: serif, color: colors.softBlack }}>
               Your Skin,<br />
               <em style={{ color: colors.roseGold }}>Luminous</em>
@@ -88,17 +123,71 @@ export default function HiFiHomepage() {
               >
                 Shop Now
               </button>
-              <button className="border px-8 py-3 text-xs tracking-widest uppercase hover:opacity-70 transition-opacity flex items-center gap-2" style={{ borderColor: colors.roseGold, color: colors.roseGold }}>
-                <Play size={12} fill="currentColor" /> Watch Film
+              <button className="border px-8 py-3 text-xs tracking-widest uppercase hover:opacity-70 transition-opacity flex items-center gap-2" style={{ borderColor: colors.softBlack, color: colors.softBlack }}>
+                Learn More
               </button>
             </div>
           </div>
-          <div className="hidden md:block absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden">
-            <img
-              src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1000&q=80"
-              alt="Hero Skincare"
-              className="w-full h-full object-cover"
-            />
+          <div
+            className="relative mt-10 h-64 overflow-hidden md:absolute md:mt-0 md:right-0 md:top-0 md:bottom-0 md:h-auto md:w-1/2"
+            role="region"
+            aria-label="Featured skincare images"
+            aria-roledescription="carousel"
+          >
+            {heroSlides.map((slide, index) => (
+              <img
+                key={slide.src}
+                src={slide.src}
+                alt={index === activeHeroSlide ? slide.alt : ''}
+                aria-hidden={index !== activeHeroSlide}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${index === activeHeroSlide ? 'opacity-100' : 'opacity-0'}`}
+              />
+            ))}
+            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4">
+              <div className="flex items-center gap-1.5 rounded-full px-3 py-2" style={{ backgroundColor: 'rgba(255,248,240,0.9)' }}>
+                {heroSlides.map((slide, index) => (
+                  <button
+                    key={slide.src}
+                    type="button"
+                    onClick={() => setActiveHeroSlide(index)}
+                    aria-label={`Show hero image ${index + 1}`}
+                    aria-current={index === activeHeroSlide ? 'true' : undefined}
+                    className={`h-2 rounded-full transition-all ${index === activeHeroSlide ? 'w-5' : 'w-2'}`}
+                    style={{ backgroundColor: index === activeHeroSlide ? colors.roseGold : colors.beigeDark }}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAutoPlaying(playing => !playing)}
+                  aria-label={isAutoPlaying ? 'Pause carousel' : 'Resume carousel'}
+                  aria-pressed={!isAutoPlaying}
+                  className="flex h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: 'rgba(255,248,240,0.9)', color: colors.softBlack }}
+                >
+                  {isAutoPlaying ? <Pause size={16} /> : <Play size={16} />}
+                </button>
+                <button
+                  type="button"
+                  onClick={showPreviousHeroSlide}
+                  aria-label="Previous hero image"
+                  className="flex h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: 'rgba(255,248,240,0.9)', color: colors.softBlack }}
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextHeroSlide}
+                  aria-label="Next hero image"
+                  className="flex h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: 'rgba(255,248,240,0.9)', color: colors.softBlack }}
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -157,7 +246,7 @@ export default function HiFiHomepage() {
           <p className="text-sm leading-relaxed mb-6" style={{ color: colors.charcoal }}>
             We believe skincare should be clean, effective, and luxurious. Every formula is dermatologist-tested and crafted with sustainably sourced ingredients that deliver visible results.
           </p>
-          <button onClick={() => navigate('/contact')} className="border px-6 py-3 text-xs uppercase tracking-widest hover:opacity-70 transition-opacity" style={{ borderColor: colors.roseGold, color: colors.roseGold }}>
+          <button onClick={() => navigate('/contact')} className="border px-6 py-3 text-xs uppercase tracking-widest hover:opacity-70 transition-opacity" style={{ borderColor: colors.softBlack, color: colors.softBlack }}>
             Learn More →
           </button>
         </div>
