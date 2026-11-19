@@ -1,5 +1,5 @@
 import { Star, Heart, Trash2, ShoppingBag } from 'lucide-react';
-import { colors, serif } from './theme';
+import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, Footer } from './shared';
 import { useStore, getProduct } from './store';
 
@@ -55,7 +55,7 @@ export default function HiFiWishlist() {
                     <span className="text-xs" style={{ color: colors.charcoal }}>{p.rating} ({p.reviews})</span>
                   </div>
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-sm font-medium" style={{ color: colors.charcoal }}>${p.price}</span>
+                    <span className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(p.price)}</span>
                     <button
                       onClick={() => addToCart(p.id, p.sizes[0])}
                       className="text-xs px-3 py-1.5 rounded hover:opacity-90 transition-opacity flex items-center gap-1.5"

@@ -28,7 +28,7 @@ function CartIcon() {
 export function AnnouncementBar() {
   return (
     <div className="text-center py-2 px-4 text-xs tracking-wider" style={{ backgroundColor: colors.softBlack, color: colors.ivory }}>
-      Free shipping on orders over $50 · Use code <span className="font-semibold" style={{ color: colors.champagne }}>GLOW10</span> for 10% off
+      Free shipping on orders over KSh 6,500 · Use code <span className="font-semibold" style={{ color: colors.champagne }}>GLOW10</span> for 10% off
     </div>
   );
 }

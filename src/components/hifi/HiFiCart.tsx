@@ -1,5 +1,5 @@
 import { Minus, Plus, Lock, ArrowRight, Truck, RotateCcw, ShoppingBag } from 'lucide-react';
-import { colors, serif } from './theme';
+import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, Footer } from './shared';
 import { useStore, getProduct } from './store';
 
@@ -8,7 +8,7 @@ export default function HiFiCart() {
   const taxRate = 0.08;
   const tax = cartSubtotal * taxRate;
   const total = cartSubtotal + tax;
-  const freeShippingThreshold = 50;
+  const freeShippingThreshold = 6500;
   const shippingProgress = Math.min((cartSubtotal / freeShippingThreshold) * 100, 100);
   const remaining = Math.max(freeShippingThreshold - cartSubtotal, 0);
 
@@ -53,7 +53,7 @@ export default function HiFiCart() {
               </div>
               <div className="flex-1">
                 {remaining > 0 ? (
-                  <p className="text-sm font-medium" style={{ color: colors.charcoal }}>Add ${remaining.toFixed(2)} more for free shipping!</p>
+                  <p className="text-sm font-medium" style={{ color: colors.charcoal }}>Add {formatKes(remaining)} more for free shipping!</p>
                 ) : (
                   <p className="text-sm font-medium" style={{ color: '#4A7C59' }}>You've unlocked free shipping!</p>
                 )}
@@ -87,7 +87,7 @@ export default function HiFiCart() {
                         </p>
                         <p className="text-xs mt-1" style={{ color: colors.roseGold }}>{item.size}</p>
                       </div>
-                      <p className="text-sm font-medium" style={{ color: colors.charcoal }}>${(product.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(product.price * item.quantity)}</p>
                     </div>
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center border rounded" style={{ borderColor: colors.beige }}>
@@ -117,14 +117,14 @@ export default function HiFiCart() {
             <div className="rounded-lg p-6 border" style={{ borderColor: colors.beige, backgroundColor: colors.beigeLight }}>
               <p className="text-sm font-semibold uppercase tracking-wider mb-5" style={{ color: colors.charcoal }}>Order Summary</p>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Subtotal ({cart.length} items)</span><span style={{ color: colors.charcoal }}>${cartSubtotal.toFixed(2)}</span></div>
+                <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Subtotal ({cart.length} items)</span><span style={{ color: colors.charcoal }}>{formatKes(cartSubtotal)}</span></div>
                 <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Estimated Shipping</span><span style={{ color: colors.roseGold, fontWeight: 500 }}>{remaining > 0 ? 'FREE' : 'FREE'}</span></div>
-                <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Estimated Tax</span><span style={{ color: colors.charcoal }}>${tax.toFixed(2)}</span></div>
+                <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Estimated Tax</span><span style={{ color: colors.charcoal }}>{formatKes(tax)}</span></div>
               </div>
               <hr className="my-5" style={{ borderColor: colors.beige }} />
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: colors.softBlack }}>Total</span>
-                <span className="text-xl font-light" style={{ fontFamily: serif, color: colors.softBlack }}>${total.toFixed(2)}</span>
+                <span className="text-xl font-light" style={{ fontFamily: serif, color: colors.softBlack }}>{formatKes(total)}</span>
               </div>
               <button
                 onClick={() => navigate('/checkout')}

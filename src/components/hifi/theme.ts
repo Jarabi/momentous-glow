@@ -16,6 +16,10 @@ export const colors = {
 
 export const serif = 'Georgia, "Times New Roman", serif';
 
+export function formatKes(amount: number): string {
+  return `KSh ${Math.round(amount).toLocaleString('en-KE')}`;
+}
+
 export const navItems = ['Skincare', 'Makeup', 'Bundles', 'New Arrivals', 'Bestsellers', 'Journal'];
 
 export const valueProps = ['Clean Formula', 'Cruelty Free', 'Dermatologist Tested', 'Sustainably Packaged'];

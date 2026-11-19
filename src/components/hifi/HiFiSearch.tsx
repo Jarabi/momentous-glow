@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search as SearchIcon, Star, Heart, X } from 'lucide-react';
-import { colors, serif } from './theme';
+import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, Footer } from './shared';
 import { useStore, products } from './store';
 
@@ -116,7 +116,7 @@ export default function HiFiSearch() {
                     <span className="text-xs" style={{ color: colors.charcoal }}>{p.rating} ({p.reviews})</span>
                   </div>
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-sm font-medium" style={{ color: colors.charcoal }}>${p.price}</span>
+                    <span className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(p.price)}</span>
                     {!isOos && (
                       <button
                         onClick={(e) => { e.stopPropagation(); addToCart(p.id, p.sizes[0]); }}

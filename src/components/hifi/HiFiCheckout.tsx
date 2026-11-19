@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Check, Lock, ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
-import { colors, serif } from './theme';
+import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar } from './shared';
 import { useStore, getProduct } from './store';
 
@@ -133,18 +133,18 @@ export default function HiFiCheckout() {
                     <p className="text-sm" style={{ color: colors.softBlack }}>{product.name}</p>
                     <p className="text-xs" style={{ color: colors.roseGold }}>{item.size} × {item.quantity}</p>
                   </div>
-                  <p className="text-sm" style={{ color: colors.charcoal }}>${(product.price * item.quantity).toFixed(2)}</p>
+                  <p className="text-sm" style={{ color: colors.charcoal }}>{formatKes(product.price * item.quantity)}</p>
                 </div>
               );
             })}
             <div className="mt-3 space-y-2 text-sm">
-              <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Subtotal</span><span style={{ color: colors.charcoal }}>${cartSubtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Subtotal</span><span style={{ color: colors.charcoal }}>{formatKes(cartSubtotal)}</span></div>
               <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Shipping</span><span style={{ color: colors.roseGold, fontWeight: 500 }}>FREE</span></div>
-              <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Tax</span><span style={{ color: colors.charcoal }}>${tax.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Tax</span><span style={{ color: colors.charcoal }}>{formatKes(tax)}</span></div>
               <hr style={{ borderColor: colors.beige }} className="my-2" />
               <div className="flex justify-between">
                 <span className="font-semibold" style={{ color: colors.softBlack }}>Total</span>
-                <span className="font-medium" style={{ color: colors.softBlack }}>${total.toFixed(2)}</span>
+                <span className="font-medium" style={{ color: colors.softBlack }}>{formatKes(total)}</span>
               </div>
             </div>
           </div>
@@ -207,8 +207,8 @@ function ShippingStep() {
 function MethodStep() {
   const methods = [
     { name: 'Standard', desc: '5-7 business days', price: 'FREE' },
-    { name: 'Express', desc: '2-3 business days', price: '$9.99' },
-    { name: 'Overnight', desc: 'Next business day', price: '$24.99' },
+    { name: 'Express', desc: '2-3 business days', price: 'KSh 650' },
+    { name: 'Overnight', desc: 'Next business day', price: 'KSh 1,500' },
   ];
   const [selected, setSelected] = useState(0);
   return (

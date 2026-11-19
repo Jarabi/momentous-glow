@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Star, Heart, Minus, Plus, ChevronRight, CheckCircle, Clock, Leaf, FlaskConical } from 'lucide-react';
-import { colors, serif } from './theme';
+import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, Footer } from './shared';
 import { useStore, getProduct, products, type Product } from './store';
 
@@ -42,7 +42,7 @@ function CrossSellCard({ product }: { product: Product }) {
       </div>
       <p className="mt-2 text-sm font-medium" style={{ color: colors.softBlack }}>{product.name}</p>
       <div className="flex items-center justify-between mt-1">
-        <span className="text-sm" style={{ color: colors.charcoal }}>${product.price}</span>
+        <span className="text-sm" style={{ color: colors.charcoal }}>{formatKes(product.price)}</span>
         {!isOos && (
           <button
             onClick={(e) => { e.stopPropagation(); addToCart(product.id, product.sizes[0]); }}
@@ -138,10 +138,10 @@ export default function HiFiPDP({ productId }: { productId: string }) {
             <span className="text-sm" style={{ color: colors.charcoal }}>{product.rating} ({product.reviews} reviews)</span>
           </div>
           <div className="flex items-center gap-3 mt-4">
-            <span className="text-2xl font-light" style={{ fontFamily: serif, color: colors.softBlack }}>${product.price}.00</span>
+            <span className="text-2xl font-light" style={{ fontFamily: serif, color: colors.softBlack }}>{formatKes(product.price)}</span>
             {product.originalPrice && (
               <>
-                <span className="text-sm line-through" style={{ color: colors.beigeDark }}>${product.originalPrice}.00</span>
+                <span className="text-sm line-through" style={{ color: colors.beigeDark }}>{formatKes(product.originalPrice)}</span>
                 <span className="text-xs rounded px-2 py-1" style={{ backgroundColor: colors.champagne, color: colors.softBlack }}>
                   {Math.round((1 - product.price / (product.originalPrice || product.price)) * 100)}% OFF
                 </span>
@@ -195,7 +195,7 @@ export default function HiFiPDP({ productId }: { productId: string }) {
           </div>
 
           <div className="mt-6 space-y-2">
-            {['Dermatologist tested', 'Vegan & cruelty-free', 'Free shipping over $50', '30-day returns'].map(t => (
+            {['Dermatologist tested', 'Vegan & cruelty-free', 'Free shipping over KSh 6,500', '30-day returns'].map(t => (
               <p key={t} className="text-xs flex items-center gap-2" style={{ color: colors.charcoal }}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.roseGold }} /> {t}
               </p>

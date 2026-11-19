@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Star, Heart, ChevronDown, SlidersHorizontal, Leaf, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import { colors, serif } from './theme';
+import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, Footer } from './shared';
 import { useStore, products, type Availability } from './store';
 
@@ -159,7 +159,7 @@ export default function HiFiPLP() {
                   </div>
 
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-sm font-medium" style={{ color: colors.charcoal }}>${p.price}</span>
+                    <span className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(p.price)}</span>
                     <AvailabilityBadge status={p.availability} />
                   </div>
                 </div>

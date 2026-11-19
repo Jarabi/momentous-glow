@@ -1,5 +1,5 @@
 import { Play, ArrowRight, Star, Instagram } from 'lucide-react';
-import { colors, serif } from './theme';
+import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, ValueProps, Newsletter, Footer } from './shared';
 import { useStore, products, type Product } from './store';
 
@@ -25,8 +25,8 @@ function ProductCard({ product }: { product: Product }) {
         </div>
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-baseline gap-2">
-            <span className="text-sm font-medium" style={{ color: colors.charcoal }}>${product.price}</span>
-            {product.originalPrice && <span className="text-xs line-through" style={{ color: colors.beigeDark }}>${product.originalPrice}</span>}
+            <span className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(product.price)}</span>
+            {product.originalPrice && <span className="text-xs line-through" style={{ color: colors.beigeDark }}>{formatKes(product.originalPrice)}</span>}
           </div>
           {!isOos && (
             <button

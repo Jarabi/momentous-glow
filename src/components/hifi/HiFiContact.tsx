@@ -46,7 +46,7 @@ export default function HiFiContact() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider" style={{ color: colors.roseGold }}>Email</p>
-                <p className="text-sm" style={{ color: colors.charcoal }}>hello@momentousglow.com</p>
+                <p className="text-sm" style={{ color: colors.charcoal }}>admin@momentousglow.co.ke</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -55,7 +55,7 @@ export default function HiFiContact() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider" style={{ color: colors.roseGold }}>Phone</p>
-                <p className="text-sm" style={{ color: colors.charcoal }}>1-800-GLOW (1-800-4569)</p>
+                <p className="text-sm" style={{ color: colors.charcoal }}>0740 770 660</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -73,7 +73,7 @@ export default function HiFiContact() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider" style={{ color: colors.roseGold }}>Address</p>
-                <p className="text-sm" style={{ color: colors.charcoal }}>123 Glow Street, New York, NY 10001</p>
+                <p className="text-sm" style={{ color: colors.charcoal }}>Sabasaba Stalls, 1st Floor, along Moi Avenue in Nairobi</p>
               </div>
             </div>
           </div>
