@@ -1,10 +1,12 @@
 import { Minus, Plus, Lock, ArrowRight, Truck, RotateCcw, ShoppingBag } from 'lucide-react';
 import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, Footer } from './shared';
-import { useStore, getProduct } from './store';
+import { useStore } from './store';
 
-export default function HiFiCart() {
-  const { cart, cartSubtotal, updateQuantity, removeFromCart, navigate } = useStore();
+export default function Cart() {
+  const { cart, updateQuantity, removeFromCart, navigate } = useStore();
+
+  const cartSubtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const taxRate = 0.08;
   const tax = cartSubtotal * taxRate;
   const total = cartSubtotal + tax;
@@ -63,17 +65,16 @@ export default function HiFiCart() {
               </div>
             </div>
 
-            {cart.map((item) => {
-              const product = getProduct(item.productId);
-              if (!product) return null;
+            {cart.map(({ product, quantity }) => {
+              const imgSrc = product.image || product.image_url;
               return (
-                <div key={`${item.productId}-${item.size}`} className="flex gap-4 py-5 border-b" style={{ borderColor: colors.beige }}>
+                <div key={product.id} className="flex gap-4 py-5 border-b" style={{ borderColor: colors.beige }}>
                   <div
                     className="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer"
                     style={{ backgroundColor: colors.beige }}
-                    onClick={() => navigate(`/product/${item.productId}`)}
+                    onClick={() => navigate(`/product/${product.id}`)}
                   >
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    <img src={imgSrc} alt={product.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between">
@@ -81,21 +82,31 @@ export default function HiFiCart() {
                         <p
                           className="text-sm font-medium cursor-pointer hover:opacity-70"
                           style={{ color: colors.softBlack }}
-                          onClick={() => navigate(`/product/${item.productId}`)}
+                          onClick={() => navigate(`/product/${product.id}`)}
                         >
                           {product.name}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: colors.roseGold }}>{item.size}</p>
+                        <p className="text-xs mt-1" style={{ color: colors.roseGold }}>{product.type || product.category}</p>
                       </div>
-                      <p className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(product.price * item.quantity)}</p>
+                      <p className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(product.price * quantity)}</p>
                     </div>
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center border rounded" style={{ borderColor: colors.beige }}>
-                        <button onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)} className="px-3 py-2"><Minus size={12} style={{ color: colors.charcoal }} /></button>
-                        <span className="px-3 py-2 border-x text-sm" style={{ borderColor: colors.beige, color: colors.charcoal }}>{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)} className="px-3 py-2"><Plus size={12} style={{ color: colors.charcoal }} /></button>
+                        <button onClick={() => updateQuantity(product.id, quantity - 1)} className="px-3 py-2">
+                          <Minus size={12} style={{ color: colors.charcoal }} />
+                        </button>
+                        <span className="px-3 py-2 border-x text-sm" style={{ borderColor: colors.beige, color: colors.charcoal }}>{quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(product.id, quantity + 1)}
+                          disabled={quantity >= product.stock_quantity}
+                          className="px-3 py-2 disabled:opacity-40"
+                        >
+                          <Plus size={12} style={{ color: colors.charcoal }} />
+                        </button>
                       </div>
-                      <button onClick={() => removeFromCart(item.productId, item.size)} className="text-xs hover:underline" style={{ color: colors.roseGold }}>Remove</button>
+                      <button onClick={() => removeFromCart(product.id)} className="text-xs hover:underline" style={{ color: colors.roseGold }}>
+                        Remove
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -117,9 +128,18 @@ export default function HiFiCart() {
             <div className="rounded-lg p-6 border" style={{ borderColor: colors.beige, backgroundColor: colors.beigeLight }}>
               <p className="text-sm font-semibold uppercase tracking-wider mb-5" style={{ color: colors.charcoal }}>Order Summary</p>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Subtotal ({cart.length} items)</span><span style={{ color: colors.charcoal }}>{formatKes(cartSubtotal)}</span></div>
-                <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Estimated Shipping</span><span style={{ color: colors.roseGold, fontWeight: 500 }}>{remaining > 0 ? 'FREE' : 'FREE'}</span></div>
-                <div className="flex justify-between"><span style={{ color: colors.charcoal }}>Estimated Tax</span><span style={{ color: colors.charcoal }}>{formatKes(tax)}</span></div>
+                <div className="flex justify-between">
+                  <span style={{ color: colors.charcoal }}>Subtotal ({cart.length} items)</span>
+                  <span style={{ color: colors.charcoal }}>{formatKes(cartSubtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span style={{ color: colors.charcoal }}>Estimated Shipping</span>
+                  <span style={{ color: colors.roseGold, fontWeight: 500 }}>FREE</span>
+                </div>
+                <div className="flex justify-between">
+                  <span style={{ color: colors.charcoal }}>Estimated Tax</span>
+                  <span style={{ color: colors.charcoal }}>{formatKes(tax)}</span>
+                </div>
               </div>
               <hr className="my-5" style={{ borderColor: colors.beige }} />
               <div className="flex justify-between items-baseline">
@@ -134,7 +154,7 @@ export default function HiFiCart() {
                 Checkout <ArrowRight size={14} />
               </button>
               <div className="mt-4 flex justify-center gap-2">
-                {['VISA', 'MC', 'PayPal', 'Apple Pay'].map(p => (
+                {['VISA', 'MC', 'M-Pesa', 'Card'].map((p) => (
                   <div key={p} className="border rounded px-2 py-1 text-xs" style={{ borderColor: colors.beige, color: colors.roseGold }}>{p}</div>
                 ))}
               </div>

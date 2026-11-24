@@ -1,29 +1,29 @@
-import { StoreProvider, useStore } from './components/hifi/store';
-import HiFiHomepage from './components/hifi/HiFiHomepage';
-import HiFiPLP from './components/hifi/HiFiPLP';
-import HiFiPDP from './components/hifi/HiFiPDP';
-import HiFiCart from './components/hifi/HiFiCart';
-import HiFiCheckout from './components/hifi/HiFiCheckout';
-import HiFiContact from './components/hifi/HiFiContact';
-import HiFiSearch from './components/hifi/HiFiSearch';
-import HiFiWishlist from './components/hifi/HiFiWishlist';
+import { StoreProvider, useStore } from './components/store';
+import Homepage from './components/Homepage';
+import PLP from './components/PLP';
+import PDP from './components/PDP';
+import Cart from './components/Cart';
+import Checkout from './components/Checkout';
+import Contact from './components/Contact';
+import Search from './components/Search';
+import Wishlist from './components/Wishlist';
 
 function Router() {
   const { route } = useStore();
 
-  if (route === '/' || route === '') return <HiFiHomepage />;
-  if (route.startsWith('/products')) return <HiFiPLP />;
+  if (route === '/' || route === '') return <Homepage />;
+  if (route.startsWith('/products')) return <PLP />;
   if (route.startsWith('/product/')) {
     const productId = route.replace('/product/', '');
-    return <HiFiPDP productId={productId} />;
+    return <PDP productId={productId} />;
   }
-  if (route === '/cart') return <HiFiCart />;
-  if (route === '/checkout') return <HiFiCheckout />;
-  if (route === '/contact') return <HiFiContact />;
-  if (route === '/search') return <HiFiSearch />;
-  if (route === '/wishlist') return <HiFiWishlist />;
+  if (route === '/cart') return <Cart />;
+  if (route === '/checkout') return <Checkout />;
+  if (route === '/contact') return <Contact />;
+  if (route === '/search') return <Search />;
+  if (route === '/wishlist') return <Wishlist />;
 
-  return <HiFiHomepage />;
+  return <Homepage />;
 }
 
 function App() {

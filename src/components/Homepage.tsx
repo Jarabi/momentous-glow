@@ -2,36 +2,61 @@ import { useEffect, useState } from 'react';
 import { ArrowRight, Star, Instagram, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, ValueProps, Newsletter, Footer } from './shared';
-import { useStore, products, type Product } from './store';
+import { useStore, type Product } from './store';
 
 function ProductCard({ product }: { product: Product }) {
   const { navigate, addToCart } = useStore();
-  const isOos = product.availability === 'out_of_stock';
+  const isOos = !product.in_stock || product.availability === 'out_of_stock' || product.stock_quantity <= 0;
+  const imgSrc = product.image || product.image_url;
+  const categoryLabel = product.type || product.category;
+  const ratingValue = product.rating ?? 4.9;
+  const reviewCount = product.reviews ?? 24;
+
   return (
     <div className="group cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
-      <div className="h-56 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 relative overflow-hidden" style={{ backgroundColor: colors.beige }}>
-        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+      <div
+        className="h-56 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 relative overflow-hidden"
+        style={{ backgroundColor: colors.beige }}
+      >
+        <img src={imgSrc} alt={product.name} className="w-full h-full object-cover" />
         {isOos && (
-          <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'rgba(255,248,240,0.7)' }}>
-            <span className="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded" style={{ backgroundColor: colors.charcoal, color: colors.ivory }}>Sold Out</span>
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(255,248,240,0.7)' }}
+          >
+            <span
+              className="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded"
+              style={{ backgroundColor: colors.charcoal, color: colors.ivory }}
+            >
+              Sold Out
+            </span>
           </div>
         )}
       </div>
       <div className="mt-3">
         <p className="text-sm font-medium" style={{ color: colors.softBlack }}>{product.name}</p>
-        <p className="text-xs" style={{ color: colors.roseGold }}>{product.type}</p>
+        <p className="text-xs" style={{ color: colors.roseGold }}>{categoryLabel}</p>
         <div className="flex items-center gap-1 mt-1">
           <Star size={12} fill={colors.champagne} style={{ color: colors.champagne }} />
-          <span className="text-xs" style={{ color: colors.charcoal }}>{product.rating} ({product.reviews})</span>
+          <span className="text-xs" style={{ color: colors.charcoal }}>
+            {ratingValue} ({reviewCount})
+          </span>
         </div>
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(product.price)}</span>
-            {product.originalPrice && <span className="text-xs line-through" style={{ color: colors.beigeDark }}>{formatKes(product.originalPrice)}</span>}
+            {product.originalPrice && (
+              <span className="text-xs line-through" style={{ color: colors.beigeDark }}>
+                {formatKes(product.originalPrice)}
+              </span>
+            )}
           </div>
           {!isOos && (
             <button
-              onClick={(e) => { e.stopPropagation(); addToCart(product.id, product.sizes[0]); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product, 1);
+              }}
               className="text-xs px-3 py-1.5 rounded hover:opacity-90 transition-opacity"
               style={{ backgroundColor: colors.roseGold, color: colors.white }}
             >
@@ -75,9 +100,12 @@ const heroSlides = [
   },
 ];
 
-export default function HiFiHomepage() {
-  const { navigate } = useStore();
-  const bestsellers = products.filter(p => p.badge === 'Bestseller' || p.rating >= 4.7).slice(0, 4);
+export default function Homepage() {
+  const { products, loading, error, navigate } = useStore();
+  const bestsellers = products
+    .filter((p) => p.badge === 'Bestseller' || (p.rating ?? 4.9) >= 4.7)
+    .slice(0, 4);
+
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -85,17 +113,17 @@ export default function HiFiHomepage() {
     if (!isAutoPlaying) return;
 
     const intervalId = window.setInterval(() => {
-      setActiveHeroSlide(current => (current + 1) % heroSlides.length);
+      setActiveHeroSlide((current) => (current + 1) % heroSlides.length);
     }, 5000);
 
     return () => window.clearInterval(intervalId);
   }, [isAutoPlaying]);
 
   const showPreviousHeroSlide = () => {
-    setActiveHeroSlide(current => (current - 1 + heroSlides.length) % heroSlides.length);
+    setActiveHeroSlide((current) => (current - 1 + heroSlides.length) % heroSlides.length);
   };
   const showNextHeroSlide = () => {
-    setActiveHeroSlide(current => (current + 1) % heroSlides.length);
+    setActiveHeroSlide((current) => (current + 1) % heroSlides.length);
   };
 
   return (
@@ -107,7 +135,6 @@ export default function HiFiHomepage() {
       <section className="relative overflow-hidden" style={{ backgroundColor: colors.beige }}>
         <div className="px-6 py-16 md:px-16 md:py-24 md:flex md:items-center">
           <div className="md:max-w-lg text-center md:text-left z-10">
-            {/* <p className="text-xs uppercase tracking-[0.3em] mb-4" style={{ color: colors.roseGold }}>New Collection · Spring 2026</p> */}
             <h1 className="font-light leading-tight mb-6 text-3xl md:text-5xl" style={{ fontFamily: serif, color: colors.softBlack }}>
               Your Skin,<br />
               <em style={{ color: colors.roseGold }}>Luminous</em>
@@ -123,7 +150,10 @@ export default function HiFiHomepage() {
               >
                 Shop Now
               </button>
-              <button className="border px-8 py-3 text-xs tracking-widest uppercase hover:opacity-70 transition-opacity flex items-center gap-2" style={{ borderColor: colors.softBlack, color: colors.softBlack }}>
+              <button
+                className="border px-8 py-3 text-xs tracking-widest uppercase hover:opacity-70 transition-opacity flex items-center gap-2"
+                style={{ borderColor: colors.softBlack, color: colors.softBlack }}
+              >
                 Learn More
               </button>
             </div>
@@ -140,7 +170,9 @@ export default function HiFiHomepage() {
                 src={slide.src}
                 alt={index === activeHeroSlide ? slide.alt : ''}
                 aria-hidden={index !== activeHeroSlide}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${index === activeHeroSlide ? 'opacity-100' : 'opacity-0'}`}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                  index === activeHeroSlide ? 'opacity-100' : 'opacity-0'
+                }`}
               />
             ))}
             <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4">
@@ -160,7 +192,7 @@ export default function HiFiHomepage() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsAutoPlaying(playing => !playing)}
+                  onClick={() => setIsAutoPlaying((playing) => !playing)}
                   aria-label={isAutoPlaying ? 'Pause carousel' : 'Resume carousel'}
                   aria-pressed={!isAutoPlaying}
                   className="flex h-10 w-10 items-center justify-center rounded-full"
@@ -201,8 +233,22 @@ export default function HiFiHomepage() {
           <h2 className="text-2xl font-light" style={{ fontFamily: serif, color: colors.softBlack }}>Shop by Category</h2>
         </div>
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          {['Skincare', 'Makeup', 'Bundles & Sets', 'New Arrivals'].map(cat => (
-            <div key={cat} className="group cursor-pointer rounded-lg overflow-hidden" onClick={() => navigate(cat === 'Skincare' ? '/products?category=Serums' : cat === 'Makeup' ? '/products?category=Treatments' : cat === 'New Arrivals' ? '/products?category=New Arrivals' : '/products')}>
+          {['Skincare', 'Makeup', 'Bundles & Sets', 'New Arrivals'].map((cat) => (
+            <div
+              key={cat}
+              className="group cursor-pointer rounded-lg overflow-hidden"
+              onClick={() =>
+                navigate(
+                  cat === 'Skincare'
+                    ? '/products?category=Serums'
+                    : cat === 'Makeup'
+                      ? '/products?category=Treatments'
+                      : cat === 'New Arrivals'
+                        ? '/products?category=New Arrivals'
+                        : '/products'
+                )
+              }
+            >
               <div className="h-44 overflow-hidden relative" style={{ backgroundColor: colors.beige }}>
                 <img src={categoryImages[cat]} alt={cat} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
@@ -220,13 +266,34 @@ export default function HiFiHomepage() {
             <p className="text-xs uppercase tracking-[0.3em] mb-2" style={{ color: colors.roseGold }}>Loved by many</p>
             <h2 className="text-2xl font-light" style={{ fontFamily: serif, color: colors.softBlack }}>Bestsellers</h2>
           </div>
-          <button onClick={() => navigate('/products?category=Bestsellers')} className="flex items-center gap-2 text-xs uppercase tracking-widest hover:opacity-70 transition-opacity" style={{ color: colors.charcoal }}>
+          <button
+            onClick={() => navigate('/products?category=Bestsellers')}
+            className="flex items-center gap-2 text-xs uppercase tracking-widest hover:opacity-70 transition-opacity"
+            style={{ color: colors.charcoal }}
+          >
             Shop All <ArrowRight size={14} />
           </button>
         </div>
-        <div className="grid gap-6 grid-cols-2 md:grid-cols-4">
-          {bestsellers.map(p => <ProductCard key={p.id} product={p} />)}
-        </div>
+
+        {loading && (
+          <p className="text-sm text-center py-8" style={{ color: colors.charcoal }}>
+            Loading bestsellers...
+          </p>
+        )}
+
+        {!loading && error && (
+          <p className="text-sm text-center py-8" style={{ color: '#A85B5B' }}>
+            {error}
+          </p>
+        )}
+
+        {!loading && !error && (
+          <div className="grid gap-6 grid-cols-2 md:grid-cols-4">
+            {bestsellers.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Brand Story */}
@@ -246,7 +313,11 @@ export default function HiFiHomepage() {
           <p className="text-sm leading-relaxed mb-6" style={{ color: colors.charcoal }}>
             We believe skincare should be clean, effective, and luxurious. Every formula is dermatologist-tested and crafted with sustainably sourced ingredients that deliver visible results.
           </p>
-          <button onClick={() => navigate('/contact')} className="border px-6 py-3 text-xs uppercase tracking-widest hover:opacity-70 transition-opacity" style={{ borderColor: colors.softBlack, color: colors.softBlack }}>
+          <button
+            onClick={() => navigate('/contact')}
+            className="border px-6 py-3 text-xs uppercase tracking-widest hover:opacity-70 transition-opacity"
+            style={{ borderColor: colors.softBlack, color: colors.softBlack }}
+          >
             Learn More →
           </button>
         </div>
@@ -256,8 +327,10 @@ export default function HiFiHomepage() {
       <section className="px-6 py-10 border-y" style={{ backgroundColor: colors.beigeLight, borderColor: colors.beige }}>
         <p className="text-center text-xs uppercase tracking-[0.3em] mb-6" style={{ color: colors.roseGold }}>As Seen In</p>
         <div className="flex justify-around flex-wrap gap-6">
-          {['VOGUE', 'ELLE', 'ALLURE', "HARPER'S BAZAAR", 'COSMOPOLITAN'].map(l => (
-            <span key={l} className="text-lg font-light tracking-widest" style={{ fontFamily: serif, color: colors.roseGoldDark }}>{l}</span>
+          {['VOGUE', 'ELLE', 'ALLURE', "HARPER'S BAZAAR", 'COSMOPOLITAN'].map((l) => (
+            <span key={l} className="text-lg font-light tracking-widest" style={{ fontFamily: serif, color: colors.roseGoldDark }}>
+              {l}
+            </span>
           ))}
         </div>
       </section>

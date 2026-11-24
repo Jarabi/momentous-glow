@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Search, ShoppingBag, Heart, User, ChevronDown, X, Menu, Phone } from 'lucide-react';
-import { colors, serif, navItems, valueProps, footerColumns } from './theme';
+import { colors, serif, valueProps, footerColumns } from './theme';
 import { useStore } from './store';
 
 function Logo({ onClick }: { onClick: () => void }) {

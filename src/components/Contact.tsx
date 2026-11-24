@@ -4,7 +4,7 @@ import { colors, serif } from './theme';
 import { AnnouncementBar, NavBar, Footer } from './shared';
 import { useStore } from './store';
 
-export default function HiFiContact() {
+export default function Contact() {
   const { navigate } = useStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

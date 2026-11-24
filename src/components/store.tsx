@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
+export type Availability = 'in_stock' | 'low_stock' | 'out_of_stock';
+
 export interface Product {
   id: number;
   sku: string;
@@ -14,7 +16,17 @@ export interface Product {
   stock_quantity: number;
   in_stock: boolean;
   image_url: string;
-};
+  // Optional UI fields (derived from backend fields when absent)
+  originalPrice?: number;
+  image?: string;
+  keyIngredients?: string[];
+  availability?: Availability;
+  rating?: number;
+  reviews?: number;
+  type?: string;
+  badge?: string;
+  sizes?: string[];
+}
 
 export interface CartItem {
   product: Product;
@@ -26,6 +38,12 @@ interface StoreContextValue {
   loading: boolean;
   error: string | null;
   cart: CartItem[];
+  cartCount: number;
+  route: string;
+  navigate: (path: string) => void;
+  wishlist: number[];
+  toggleWishlist: (productId: number) => void;
+  isWishlisted: (productId: number) => boolean;
   addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
@@ -37,22 +55,74 @@ const StoreContext = createContext<StoreContextValue | undefined>(undefined);
 
 const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
+function normalizeProduct(raw: Product): Product {
+  const stockQty = Number(raw.stock_quantity ?? 0);
+  const availability: Availability =
+    stockQty <= 0 ? 'out_of_stock' : stockQty <= 5 ? 'low_stock' : 'in_stock';
+
+  const parsedIngredients = Array.isArray(raw.keyIngredients)
+    ? raw.keyIngredients
+    : raw.ingredients
+      ? raw.ingredients
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .slice(0, 4)
+      : [];
+
+  return {
+    ...raw,
+    price: Number(raw.price),
+    stock_quantity: stockQty,
+    in_stock: Boolean(raw.in_stock ?? stockQty > 0),
+    skin_concerns: Array.isArray(raw.skin_concerns) ? raw.skin_concerns : [],
+    image: raw.image || raw.image_url,
+    keyIngredients: parsedIngredients,
+    availability,
+    rating: raw.rating ?? 4.9,
+    reviews: raw.reviews ?? 24,
+    type: raw.type || raw.category,
+    sizes: raw.sizes && raw.sizes.length > 0 ? raw.sizes : ['Standard'],
+  };
+}
+
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [route, setRoute] = useState<string>(() => window.location.pathname + window.location.search);
+
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    const onPopState = () => {
+      setRoute(window.location.pathname + window.location.search);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  const navigate = useCallback((path: string) => {
+    window.history.pushState({}, '', path);
+    setRoute(path);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const res = await fetch(`${API_BASE}/api/products`);
+      const rawText = await res.text();
+
       if (!res.ok) {
-        throw new Error(`Request failed (${res.status})`);
+        throw new Error(`Request failed (${res.status}): ${rawText.slice(0, 120)}`);
       }
-      const data: Product[] = await res.json();
-      setProducts(data);
+
+      const data: Product[] = JSON.parse(rawText);
+      setProducts(data.map(normalizeProduct));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not fetch products');
     } finally {
@@ -64,8 +134,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     fetchProducts();
   }, [fetchProducts]);
 
+  const toggleWishlist = (productId: number) => {
+    setWishlist((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+    );
+  };
+
+  const isWishlisted = (productId: number) => wishlist.includes(productId);
+
   const addToCart = (product: Product, quantity = 1) => {
-    if (!product.in_stock) return;
+    if (!product.in_stock || product.stock_quantity <= 0) return;
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -117,6 +195,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loading,
         error,
         cart,
+        cartCount,
+        route,
+        navigate,
+        wishlist,
+        toggleWishlist,
+        isWishlisted,
         addToCart,
         removeFromCart,
         updateQuantity,

@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { Search as SearchIcon, Star, Heart, X } from 'lucide-react';
 import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar, NavBar, Footer } from './shared';
-import { useStore, products } from './store';
+import { useStore } from './store';
 
-export default function HiFiSearch() {
-  const { navigate, route, addToCart, isWishlisted, toggleWishlist } = useStore();
+export default function Search() {
+  const { products, loading, navigate, route, addToCart, isWishlisted, toggleWishlist } = useStore();
 
   const getInitialQuery = () => {
     const queryIndex = route.indexOf('?');
@@ -22,12 +22,18 @@ export default function HiFiSearch() {
 
   const q = query.toLowerCase().trim();
   const results = q
-    ? products.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.keyIngredients.some(i => i.toLowerCase().includes(q))
-      )
+    ? products.filter((p) => {
+        const ingredientList =
+          p.keyIngredients ??
+          (p.ingredients ? p.ingredients.split(',').map((s) => s.trim()) : []);
+        return (
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          p.ingredients.toLowerCase().includes(q) ||
+          ingredientList.some((i) => i.toLowerCase().includes(q))
+        );
+      })
     : [];
 
   return (
@@ -65,13 +71,17 @@ export default function HiFiSearch() {
 
       {/* Results */}
       <div className="px-6 py-8">
-        {q && (
+        {loading && (
+          <p className="text-sm text-center py-8" style={{ color: colors.charcoal }}>Loading catalog...</p>
+        )}
+
+        {!loading && q && (
           <p className="text-sm mb-6" style={{ color: colors.charcoal }}>
             {results.length} result{results.length !== 1 ? 's' : ''} for "{query}"
           </p>
         )}
 
-        {q && results.length === 0 && (
+        {!loading && q && results.length === 0 && (
           <div className="text-center py-16">
             <p className="text-sm mb-2" style={{ color: colors.roseGold }}>No products found.</p>
             <p className="text-xs mb-6" style={{ color: colors.charcoal }}>Try a different keyword or browse all products.</p>
@@ -93,19 +103,34 @@ export default function HiFiSearch() {
         )}
 
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map(p => {
-            const isOos = p.availability === 'out_of_stock';
+          {results.map((p) => {
+            const isOos = !p.in_stock || p.availability === 'out_of_stock' || p.stock_quantity <= 0;
             const wished = isWishlisted(p.id);
+            const imgSrc = p.image || p.image_url;
             return (
-              <div key={p.id} className="group rounded-xl border overflow-hidden transition-shadow hover:shadow-md" style={{ borderColor: colors.beige, backgroundColor: colors.white }}>
-                <div className="relative h-48 cursor-pointer overflow-hidden" style={{ backgroundColor: colors.beigeLight }} onClick={() => navigate(`/product/${p.id}`)}>
-                  <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div
+                key={p.id}
+                className="group rounded-xl border overflow-hidden transition-shadow hover:shadow-md"
+                style={{ borderColor: colors.beige, backgroundColor: colors.white }}
+              >
+                <div
+                  className="relative h-48 cursor-pointer overflow-hidden"
+                  style={{ backgroundColor: colors.beigeLight }}
+                  onClick={() => navigate(`/product/${p.id}`)}
+                >
+                  <img src={imgSrc} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   <button
-                    onClick={(e) => { e.stopPropagation(); toggleWishlist(p.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist(p.id);
+                    }}
                     className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-sm"
                     style={{ backgroundColor: colors.ivory }}
                   >
-                    <Heart size={14} style={{ color: wished ? colors.roseGold : colors.beigeDark, fill: wished ? colors.roseGold : 'none' }} />
+                    <Heart
+                      size={14}
+                      style={{ color: wished ? colors.roseGold : colors.beigeDark, fill: wished ? colors.roseGold : 'none' }}
+                    />
                   </button>
                 </div>
                 <div className="px-4 pt-3 pb-4 cursor-pointer" onClick={() => navigate(`/product/${p.id}`)}>
@@ -113,13 +138,18 @@ export default function HiFiSearch() {
                   <p className="text-xs mt-0.5" style={{ color: colors.roseGold }}>{p.category}</p>
                   <div className="flex items-center gap-1 mt-1.5">
                     <Star size={11} fill={colors.champagne} style={{ color: colors.champagne }} />
-                    <span className="text-xs" style={{ color: colors.charcoal }}>{p.rating} ({p.reviews})</span>
+                    <span className="text-xs" style={{ color: colors.charcoal }}>
+                      {p.rating ?? 4.9} ({p.reviews ?? 24})
+                    </span>
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-sm font-medium" style={{ color: colors.charcoal }}>{formatKes(p.price)}</span>
                     {!isOos && (
                       <button
-                        onClick={(e) => { e.stopPropagation(); addToCart(p.id, p.sizes[0]); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(p, 1);
+                        }}
                         className="text-xs px-3 py-1.5 rounded hover:opacity-90 transition-opacity"
                         style={{ backgroundColor: colors.roseGold, color: colors.white }}
                       >

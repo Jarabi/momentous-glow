@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { Check, Lock, ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 import { colors, serif, formatKes } from './theme';
 import { AnnouncementBar } from './shared';
-import { useStore, getProduct } from './store';
+import { useStore } from './store';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
-export default function HiFiCheckout() {
-  const { cart, cartSubtotal, navigate } = useStore();
+export default function Checkout() {
+  const { cart, navigate } = useStore();
   const [step, setStep] = useState<Step>(1);
   const [orderComplete, setOrderComplete] = useState(false);
   const steps = ['Contact', 'Shipping', 'Method', 'Payment', 'Review'];
+
+  const cartSubtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const taxRate = 0.08;
   const tax = cartSubtotal * taxRate;
   const total = cartSubtotal + tax;
@@ -76,10 +78,21 @@ export default function HiFiCheckout() {
         <div className="flex justify-center gap-2 overflow-x-auto">
           {steps.map((s, i) => (
             <div key={s} className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs" style={i + 1 < step ? { backgroundColor: colors.roseGold, color: colors.white } : i + 1 === step ? { border: `2px solid ${colors.roseGold}`, color: colors.roseGold } : { border: `2px solid ${colors.beige}`, color: colors.beigeDark }}>
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs"
+                style={
+                  i + 1 < step
+                    ? { backgroundColor: colors.roseGold, color: colors.white }
+                    : i + 1 === step
+                      ? { border: `2px solid ${colors.roseGold}`, color: colors.roseGold }
+                      : { border: `2px solid ${colors.beige}`, color: colors.beigeDark }
+                }
+              >
                 {i + 1 < step ? <Check size={14} /> : i + 1}
               </div>
-              <span className="text-sm" style={{ color: i + 1 === step ? colors.softBlack : i + 1 < step ? colors.charcoal : colors.beigeDark }}>{s}</span>
+              <span className="text-sm" style={{ color: i + 1 === step ? colors.softBlack : i + 1 < step ? colors.charcoal : colors.beigeDark }}>
+                {s}
+              </span>
               {i < steps.length - 1 && <div className="w-6 h-px" style={{ backgroundColor: colors.beige }} />}
             </div>
           ))}
@@ -97,20 +110,36 @@ export default function HiFiCheckout() {
 
           <div className="flex justify-between mt-8 pt-6 border-t" style={{ borderColor: colors.beige }}>
             {step > 1 ? (
-              <button onClick={() => setStep((step - 1) as Step)} className="flex items-center gap-2 text-sm hover:opacity-70 transition-opacity" style={{ color: colors.roseGold }}>
+              <button
+                onClick={() => setStep((step - 1) as Step)}
+                className="flex items-center gap-2 text-sm hover:opacity-70 transition-opacity"
+                style={{ color: colors.roseGold }}
+              >
                 <ArrowLeft size={14} /> Back
               </button>
             ) : (
-              <button onClick={() => navigate('/cart')} className="flex items-center gap-2 text-sm hover:opacity-70 transition-opacity" style={{ color: colors.roseGold }}>
+              <button
+                onClick={() => navigate('/cart')}
+                className="flex items-center gap-2 text-sm hover:opacity-70 transition-opacity"
+                style={{ color: colors.roseGold }}
+              >
                 <ArrowLeft size={14} /> Back to Cart
               </button>
             )}
             {step < 5 ? (
-              <button onClick={() => setStep((step + 1) as Step)} className="flex items-center gap-2 px-6 py-3 rounded text-sm font-medium tracking-widest uppercase hover:opacity-90 transition-opacity" style={{ backgroundColor: colors.softBlack, color: colors.ivory }}>
+              <button
+                onClick={() => setStep((step + 1) as Step)}
+                className="flex items-center gap-2 px-6 py-3 rounded text-sm font-medium tracking-widest uppercase hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: colors.softBlack, color: colors.ivory }}
+              >
                 Continue <ArrowRight size={14} />
               </button>
             ) : (
-              <button onClick={() => setOrderComplete(true)} className="px-8 py-3 rounded text-sm font-medium tracking-widest uppercase hover:opacity-90 transition-opacity" style={{ backgroundColor: colors.roseGold, color: colors.white }}>
+              <button
+                onClick={() => setOrderComplete(true)}
+                className="px-8 py-3 rounded text-sm font-medium tracking-widest uppercase hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: colors.roseGold, color: colors.white }}
+              >
                 Place Order
               </button>
             )}
@@ -121,19 +150,22 @@ export default function HiFiCheckout() {
         <div className="mt-6 md:mt-0 md:w-80 flex-shrink-0">
           <div className="rounded-lg p-5 border" style={{ borderColor: colors.beige, backgroundColor: colors.beigeLight }}>
             <p className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: colors.charcoal }}>Order Summary</p>
-            {cart.map((item) => {
-              const product = getProduct(item.productId);
-              if (!product) return null;
+            {cart.map(({ product, quantity }) => {
+              const imgSrc = product.image || product.image_url;
               return (
-                <div key={`${item.productId}-${item.size}`} className="flex gap-3 py-3 border-b" style={{ borderColor: colors.beige }}>
-                  <div className="w-12 h-12 rounded flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: colors.beige }}>
-                    <span className="text-xs" style={{ color: colors.roseGoldDark }}>[Img]</span>
+                <div key={product.id} className="flex gap-3 py-3 border-b" style={{ borderColor: colors.beige }}>
+                  <div className="w-12 h-12 rounded flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ backgroundColor: colors.beige }}>
+                    {imgSrc ? (
+                      <img src={imgSrc} alt={product.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs" style={{ color: colors.roseGoldDark }}>[Img]</span>
+                    )}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm" style={{ color: colors.softBlack }}>{product.name}</p>
-                    <p className="text-xs" style={{ color: colors.roseGold }}>{item.size} × {item.quantity}</p>
+                    <p className="text-xs" style={{ color: colors.roseGold }}>{product.category} × {quantity}</p>
                   </div>
-                  <p className="text-sm" style={{ color: colors.charcoal }}>{formatKes(product.price * item.quantity)}</p>
+                  <p className="text-sm" style={{ color: colors.charcoal }}>{formatKes(product.price * quantity)}</p>
                 </div>
               );
             })}
@@ -196,8 +228,8 @@ function ShippingStep() {
         <Field label="Last name" />
         <div className="col-span-2"><Field label="Address" /></div>
         <Field label="City" />
-        <Field label="State" />
-        <Field label="ZIP code" />
+        <Field label="County / State" />
+        <Field label="Postal code" />
         <Field label="Phone" type="tel" />
       </div>
     </div>
@@ -219,7 +251,10 @@ function MethodStep() {
           <label
             key={m.name}
             className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer transition-all"
-            style={{ borderColor: i === selected ? colors.roseGold : colors.beige, backgroundColor: i === selected ? colors.beigeLight : 'transparent' }}
+            style={{
+              borderColor: i === selected ? colors.roseGold : colors.beige,
+              backgroundColor: i === selected ? colors.beigeLight : 'transparent',
+            }}
           >
             <input type="radio" name="method" checked={i === selected} onChange={() => setSelected(i)} className="hidden" />
             <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center" style={{ borderColor: colors.roseGold }}>
@@ -238,17 +273,21 @@ function MethodStep() {
 }
 
 function PaymentStep() {
-  const [method, setMethod] = useState('Card');
+  const [method, setMethod] = useState('M-Pesa');
   return (
     <div>
       <h2 className="text-xl font-light mb-5" style={{ fontFamily: serif, color: colors.softBlack }}>Payment</h2>
       <div className="flex gap-3 mb-5 flex-wrap">
-        {['Apple Pay', 'Google Pay', 'PayPal', 'Card'].map(p => (
+        {['M-Pesa', 'Card', 'Apple Pay', 'Google Pay'].map((p) => (
           <button
             key={p}
             onClick={() => setMethod(p)}
             className="border rounded-lg px-4 py-2 text-sm transition-all"
-            style={method === p ? { borderColor: colors.roseGold, backgroundColor: colors.beigeLight, color: colors.softBlack } : { borderColor: colors.beige, color: colors.charcoal }}
+            style={
+              method === p
+                ? { borderColor: colors.roseGold, backgroundColor: colors.beigeLight, color: colors.softBlack }
+                : { borderColor: colors.beige, color: colors.charcoal }
+            }
           >
             {p}
           </button>
@@ -265,7 +304,7 @@ function PaymentStep() {
       )}
       {method !== 'Card' && (
         <div className="rounded-lg p-8 text-center" style={{ backgroundColor: colors.beigeLight }}>
-          <p className="text-sm" style={{ color: colors.charcoal }}>You'll be redirected to {method} to complete your purchase securely.</p>
+          <p className="text-sm" style={{ color: colors.charcoal }}>You'll complete your purchase securely via {method}.</p>
         </div>
       )}
     </div>
@@ -275,15 +314,15 @@ function PaymentStep() {
 function ReviewStep() {
   const rows = [
     { label: 'Contact', value: 'alex@example.com' },
-    { label: 'Ship to', value: '123 Main St, New York, NY 10001' },
+    { label: 'Ship to', value: 'Nairobi, Kenya' },
     { label: 'Method', value: 'Standard (5-7 days) — FREE' },
-    { label: 'Payment', value: 'Visa ending in 4242' },
+    { label: 'Payment', value: 'M-Pesa / Card' },
   ];
   return (
     <div>
       <h2 className="text-xl font-light mb-5" style={{ fontFamily: serif, color: colors.softBlack }}>Review Your Order</h2>
       <div className="space-y-3">
-        {rows.map(r => (
+        {rows.map((r) => (
           <div key={r.label} className="flex justify-between border-b pb-3" style={{ borderColor: colors.beige }}>
             <span className="text-sm" style={{ color: colors.roseGold }}>{r.label}</span>
             <span className="text-sm text-right" style={{ color: colors.charcoal }}>{r.value}</span>
